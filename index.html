@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diversifi Capital — Loan vs. Sell-to-Cover Analyzer</title>
+<link rel="stylesheet" href="styles.css?v=7">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="wordmark"><div class="mark">D</div><div class="name">Diversifi Capital<small>Equity &amp; Tax Advisory</small></div></div>
+      <div class="top-actions noprint">
+        <button class="tab on" id="tabMain">Analyzer</button>
+        <button class="tab" id="tabIncome">Income &amp; Tax</button>
+        <button class="tab" id="printBtn">⎙ Print / PDF</button>
+      </div>
+    </div>
+    <h1>Borrow vs. Sell-to-Cover — Single-Trigger RSU Settlement</h1>
+    <p>When RSUs settle you owe ordinary income tax. You can <b>sell shares to cover</b> it, or <b>borrow</b> against the position and keep every share. This tool isolates <b>why borrowing wins or loses</b>, compares a <b>short-term</b> vs <b>long-term</b> hold, and lays out the <b>monthly cash-flow</b> of carrying the loan.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="panel" id="grantsPanel" style="margin-bottom:20px">
+    <div class="panel-h"><span class="ico">▤</span> RSU Grants Settling
+      <button class="tab2 noprint" id="addGrant" style="margin-left:auto">＋ Add grant</button>
+      <button class="tab2 ghost noprint" id="loadExample">Load example</button>
+    </div>
+    <div class="scroll">
+      <table class="grants" id="grantsTable">
+        <colgroup><col class="c-num"><col class="c-date"><col class="c-sh"><col class="c-inc"><col class="c-x"></colgroup>
+        <thead><tr><th>Grant&nbsp;#</th><th>Grant&nbsp;Date</th><th>Time-Vested RSUs</th><th>RSU&nbsp;Value</th><th class="noprint"></th></tr></thead>
+        <tbody id="grantsBody"></tbody>
+        <tfoot><tr class="totals"><td>Total</td><td></td><td id="gTotShares">0</td><td id="gTotValue">$0</td><td class="noprint"></td></tr></tfoot>
+      </table>
+    </div>
+    <div class="pad"><div class="help">Enter each grant from the client's Shareworks report. Shares are summed; all settle at the fixed <b>$<span id="g409a">61.55</span></b> 409A price.</div></div>
+  </div>
+
+  <div class="panel" id="srcPanel" style="margin-bottom:20px">
+    <div class="panel-h"><span class="ico">$</span> Loan Sources
+      <button class="tab2 noprint" id="addSrc" style="margin-left:auto">＋ Add source</button>
+      <button class="tab2 ghost noprint" id="loadSrc">Load example</button>
+    </div>
+    <div class="scroll">
+      <table class="grants" id="srcTable">
+        <colgroup><col style="width:32%"><col style="width:22%"><col style="width:14%"><col style="width:24%"><col style="width:36px"></colgroup>
+        <thead><tr><th>Source</th><th>Amount available</th><th>Rate</th><th>Drawn (cheapest first)</th><th class="noprint"></th></tr></thead>
+        <tbody id="srcBody"></tbody>
+        <tfoot><tr class="totals"><td>Total capacity</td><td id="sTotCap">$0</td><td id="sBlended">—</td><td id="sDrawn">$0</td><td class="noprint"></td></tr></tfoot>
+      </table>
+    </div>
+    <div class="pad"><div class="help" id="srcNote"></div></div>
+  </div>
+
+  <div class="grid">
+
+  <!-- INPUTS -->
+  <aside class="panel inputs">
+    <div class="panel-h"><span class="ico">⚙</span> Inputs</div>
+    <div class="pad">
+      <div class="grp">
+        <div class="grp-t">The Position</div>
+        <div class="fld"><label class="l">409A / settlement price <span class="sub">(fixed)</span></label>
+          <div class="ro" id="priceRO">$61.55</div>
+          <div class="help">Cost basis &amp; sell-to-cover price for all grants. <b id="sharesEcho">0</b> shares · gross <b id="grossV">$0</b></div></div>
+      </div>
+      <div class="grp">
+        <div class="grp-t">Income &amp; Filing (2026)</div>
+        <div class="fld"><label class="l">Filing status</label>
+          <div class="seg" id="seg-status"><button data-v="single" class="on">Single</button><button data-v="mfj">Married / Joint</button></div></div>
+        <div class="fld"><label class="l">Other 2026 ordinary income <span class="sub">(salary, bonus)</span></label>
+          <div class="pre"><span class="sym">$</span><input type="number" id="otherIncome" value="300000" min="0" step="5000"></div>
+          <div class="help">RSU settlement income stacks on top of this through the 2026 brackets — see the <b>Income &amp; Tax</b> tab.</div></div>
+        <div class="fld"><label class="l">State income tax rate</label>
+          <div class="suf"><input type="number" id="stateRate" value="9.3" min="0" max="15" step="0.1"><span class="u">%</span></div>
+          <div class="help">Applied to settlement income and to capital gains.</div></div>
+        <div class="fld" style="margin-bottom:0"><label class="l">Long-term fed cap-gains rate</label>
+          <div class="suf"><input type="number" id="ltFed" value="20" min="0" max="30" step="1"><span class="u">%</span></div>
+          <div class="help">15% or 20% by income (20% for most large settlements). NIIT 3.8% + state are added automatically.</div></div>
+      </div>
+      <div class="grp">
+        <div class="grp-t">Derived Rates <span class="sub">(auto)</span></div>
+        <div class="ro" id="ratesRO" style="font-size:12.5px;font-weight:600;line-height:1.8">—</div>
+      </div>
+      <div class="grp">
+        <div class="grp-t">The Loan</div>
+        <div class="fld"><label class="l">Blended borrowing rate <span class="sub">(from sources)</span></label>
+          <div class="ro" id="loanRO">—</div>
+          <div class="help">Set the sources &amp; amounts in the <b>Loan Sources</b> table above. Cheapest sources are drawn first.</div></div>
+        <div class="fld" style="margin-bottom:0"><label class="l">Interest treatment</label>
+          <div class="seg" id="seg-cap"><button data-v="0" class="on">Interest-only (simple)</button><button data-v="1">Capitalizing</button></div>
+          <div class="help">Simple = interest on principal. Capitalizing = interest compounds into the balance.</div></div>
+      </div>
+      <div class="grp">
+        <div class="grp-t">Horizon &amp; Scenario</div>
+        <div class="two">
+          <div class="fld"><label class="l">Short-term hold</label><div class="suf"><input type="number" id="shortM" value="6" min="1" max="11" step="1"><span class="u">mo</span></div></div>
+          <div class="fld"><label class="l">Long-term hold</label><div class="suf"><input type="number" id="longM" value="18" min="12" max="60" step="1"><span class="u">mo</span></div></div>
+        </div>
+        <div class="fld"><label class="l">Future stock price <span class="sub">(tender / sale)</span></label>
+          <div class="slider-row"><input type="range" id="futureR" min="40" max="160" step="1" value="80"><span class="slider-val" id="futureV">$80</span></div>
+          <div class="help">The scenario lever — change it to test outcomes.</div></div>
+        <div class="fld" style="margin-bottom:0"><label class="l">Headline horizon</label>
+          <div class="seg" id="seg-horizon"><button data-v="lt" class="on">Long-term</button><button data-v="st">Short-term</button></div>
+          <div class="help">Which hold the hero number &amp; price sweep focus on (the table always shows both).</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- RESULTS -->
+  <main>
+   <div id="viewMain">
+    <div class="hero" id="hero">
+      <div class="lab" id="heroLab">Borrowing &amp; holding nets more than selling to cover by</div>
+      <div class="big" id="heroBig">$0</div>
+      <div class="sub" id="heroSub"></div>
+      <span class="pill" id="heroPill"></span>
+    </div>
+
+    <div class="panel" style="margin-bottom:20px">
+      <div class="section-h">Strategy Comparison <span class="hint">at future price <b id="fpLbl">$80</b></span></div>
+      <div class="scroll"><table class="mtx" id="mtxTable">
+        <thead><tr><th>Metric</th><th class="sellcol">Sell-to-Cover (ST)</th><th class="loancol">Borrow (ST)</th><th class="sellcol">Sell-to-Cover (LT)</th><th class="loancol">Borrow (LT)</th></tr></thead>
+        <tbody id="mtxBody"></tbody>
+      </table></div>
+    </div>
+
+    <div class="panel" style="margin-bottom:20px">
+      <div class="section-h">Why Borrowing Wins or Loses <span class="hint" id="wfHint"></span></div>
+      <div class="waterfall" id="waterfall"></div>
+      <div class="note" id="wfNote"></div>
+    </div>
+
+    <div class="panel" style="margin-bottom:20px">
+      <div class="section-h">Short-Term vs. Long-Term Hold <span class="hint">borrowing in both cases</span></div>
+      <div class="cards3" id="stltCards"></div>
+      <div class="note warn" id="stltNote"></div>
+    </div>
+
+    <div class="panel" style="margin-bottom:20px">
+      <div class="section-h">Monthly Cash-Flow of Carrying the Loan <span class="hint" id="schedHint"></span></div>
+      <div class="scroll" style="max-height:420px"><table class="sched" id="schedTable">
+        <thead><tr><th>Month</th><th>Debt (start)</th><th>Interest</th><th>Paid / capitalized</th><th>Debt (end)</th><th>Cumulative interest</th><th>Shares to cover interest</th></tr></thead>
+        <tbody id="schedBody"></tbody>
+      </table></div>
+      <div class="note" id="schedNote"></div>
+    </div>
+
+    <div class="panel">
+      <div class="section-h">Future-Price Sensitivity <span class="hint">advantage of borrowing vs. selling — <b id="sensHorizon">long-term</b></span></div>
+      <div class="scroll"><table class="sens" id="sensTable">
+        <thead><tr><th>Future price</th><th>Sell-to-Cover take-home</th><th>Borrow take-home</th><th>Advantage of borrowing</th></tr></thead>
+        <tbody id="sensBody"></tbody>
+      </table></div>
+      <div class="note" id="sensNote"></div>
+    </div>
+
+    <div class="disclaimer">
+      <h4>Assumptions &amp; Notes</h4>
+      <p>Simplified planning illustration, <b>not tax or investment advice.</b> Tax at settlement is computed on the RSU income stacked on top of your other 2026 ordinary income through the federal brackets, plus state and Medicare/payroll — see the <b>Income &amp; Tax</b> tab. Short-term gains (sold inside 12 months) are taxed at your marginal ordinary rate + <b>3.8% NIIT</b> + state; long-term gains (held 12+ months) at the long-term federal rate + 3.8% NIIT + state. Borrowing keeps all shares; interest = loan × borrowing rate over the hold (simple, or compounding if capitalizing). Ignores AMT, capital-loss offsets below basis, dividends, and margin-call risk. Private-company shares aren't freely sellable — future prices are <b>not guaranteed</b>. Confirm with the client's CPA before acting.</p>
+    </div>
+   </div><!-- /viewMain -->
+
+   <div id="viewIncome" style="display:none">
+    <div class="hero" id="incHero" style="background:linear-gradient(135deg,var(--brand),var(--brand2))">
+      <div class="lab">2026 ordinary income &amp; settlement tax</div>
+      <div class="big" id="incBig">$0</div>
+      <div class="sub" id="incSub"></div>
+      <span class="pill" id="incPill"></span>
+    </div>
+    <div class="panel" style="margin-bottom:20px">
+      <div class="section-h">How RSU Income Stacks on the 2026 Brackets <span class="hint" id="incBarHint"></span></div>
+      <div class="pad">
+        <div class="incbar" id="incBar"></div>
+        <div class="inclegend" id="incLegend"></div>
+      </div>
+      <div class="scroll"><table class="sched" id="ladderTable">
+        <thead><tr><th>2026 federal bracket</th><th>Rate</th><th>RSU income taxed here</th><th>Federal tax</th></tr></thead>
+        <tbody id="ladderBody"></tbody>
+      </table></div>
+    </div>
+    <div class="panel" style="margin-bottom:20px">
+      <div class="section-h">Settlement Tax &amp; Capital-Gains Rates <span class="hint">driven by the income above</span></div>
+      <div class="cards3" id="incCards"></div>
+      <div class="note" id="incNote"></div>
+    </div>
+   </div><!-- /viewIncome -->
+  </main>
+</div></div>
+
+<script src="app.js?v=7"></script>
+</body>
+</html>
