@@ -391,7 +391,7 @@ function calc(){
   for (let mo = 1; mo <= I.longM; mo++){
     const start = debt, monthInt = start * monthlyR;
     cumInt += monthInt;
-    const end = I.capitalize ? start + monthInt : R.taxesDue;
+    const end = I.capitalize ? start + monthInt : R.loanAmount;   // interest-only: principal stays at the drawn loan
     debt = end;
     const sharesCover = R.F > 0 ? Math.ceil(cumInt / R.F) : 0;
     const flag = (mo === I.shortM || mo === I.longM) ? ' style="background:#eef5ff;font-weight:700"' : '';
