@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Diversifi Capital — Loan vs. Sell-to-Cover Analyzer</title>
-<link rel="stylesheet" href="styles.css?v=10">
+<link rel="stylesheet" href="styles.css?v=11">
 </head>
 <body>
 <header class="top">
@@ -17,12 +17,19 @@
         <button class="tab" id="printBtn">⎙ Print / PDF</button>
       </div>
     </div>
-    <h1>Borrow vs. Sell-to-Cover — Single-Trigger RSU Settlement</h1>
+    <h1>Borrow vs. Sell-to-Cover — Single-Trigger RSU Settlement <span class="beta-badge">BETA</span></h1>
     <p>When RSUs settle you owe ordinary income tax. You can <b>sell shares to cover</b> it, or <b>borrow</b> against the position and keep every share. This tool isolates <b>why borrowing wins or loses</b>, compares a <b>short-term</b> vs <b>long-term</b> hold, and lays out the <b>monthly cash-flow</b> of carrying the loan.</p>
   </div>
 </header>
 
 <div class="wrap">
+
+  <div class="disclosure-bar">
+    <b>Beta tool — for illustration and education only.</b> This calculator is under active development and may contain errors.
+    Nothing here is investment, tax, legal, or accounting advice, and no output constitutes a recommendation to buy, sell, hold,
+    or borrow against any security. Figures are hypothetical estimates based on simplified assumptions and the inputs you provide;
+    actual results will differ. Consult your CPA and financial advisor before acting.
+  </div>
 
   <div class="panel" id="grantsPanel" style="margin-bottom:20px">
     <div class="panel-h"><span class="ico">▤</span> RSU Grants Settling
@@ -161,7 +168,10 @@
 
     <div class="disclaimer">
       <h4>Assumptions &amp; Notes</h4>
-      <p>Simplified planning illustration, <b>not tax or investment advice.</b> Tax at settlement is computed on the RSU income stacked on top of your other 2026 ordinary income through the federal brackets, plus state and Medicare/payroll — see the <b>Income &amp; Tax</b> tab. Short-term gains (sold inside 12 months) are taxed at your marginal ordinary rate + <b>3.8% NIIT</b> + state; long-term gains (held 12+ months) at the long-term federal rate + 3.8% NIIT + state. Borrowing keeps all shares; interest = loan × borrowing rate over the hold (simple, or compounding if capitalizing). Ignores AMT, capital-loss offsets below basis, dividends, and margin-call risk. Private-company shares aren't freely sellable — future prices are <b>not guaranteed</b>. Confirm with the client's CPA before acting.</p>
+      <p>Simplified planning illustration. Tax at settlement is computed on the RSU income stacked on top of your other 2026 ordinary income through the federal brackets, plus state and Medicare/payroll — see the <b>Income &amp; Tax</b> tab. Short-term gains (sold inside 12 months) are taxed at your marginal ordinary rate + <b>3.8% NIIT</b> + state; long-term gains (held 12+ months) at the long-term federal rate + 3.8% NIIT + state. Borrowing keeps all shares; interest = loan × borrowing rate over the hold (simple, or compounding if capitalizing). Ignores AMT, capital-loss offsets below basis, dividends, and margin-call risk. Private-company shares aren't freely sellable — future prices are <b>not guaranteed</b>.</p>
+      <h4 style="margin-top:12px">Important Disclosures</h4>
+      <p><b>Beta software.</b> This tool is provided "as is" for illustrative and educational purposes only, is under active development, and may contain errors or omissions. No warranty is made as to the accuracy, completeness, or timeliness of any calculation.</p>
+      <p style="margin-top:8px"><b>Not advice.</b> Nothing in this tool constitutes investment, financial, tax, legal, or accounting advice, or a recommendation or solicitation to buy, sell, hold, pledge, or borrow against any security. Use of this tool does not create an advisory, fiduciary, or client relationship. All outputs are hypothetical projections based on simplified assumptions and user-supplied inputs; they are not guarantees of future results, and actual outcomes will differ. Borrowing against securities involves significant risks, including margin calls and loss of collateral. Tax rules are complex and subject to change; the figures shown may not reflect your individual circumstances. Before making any decision, consult your own qualified tax, legal, and financial professionals.</p>
     </div>
    </div><!-- /viewMain -->
 
@@ -192,6 +202,6 @@
   </main>
 </div></div>
 
-<script src="app.js?v=10"></script>
+<script src="app.js?v=11"></script>
 </body>
 </html>
