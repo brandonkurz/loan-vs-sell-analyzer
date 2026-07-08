@@ -56,7 +56,8 @@ function bracketSegs(status, baseTaxable, withTaxable){
   return segs;
 }
 
-const S = { capitalize: 0, horizon: 'lt', status: 'single' };
+const S = { capitalize: 0, horizon: 'st', status: 'single' };
+const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 
 /* ---- RSU grants table (shares per grant; all settle at the fixed 409A) ---- */
 const EXAMPLE_GRANTS = [
@@ -188,8 +189,8 @@ function readInputs(){
     otherIncome: +$('otherIncome').value || 0,
     stateRate:   (+$('stateRate').value  || 0) / 100,
     ltFed:       (+$('ltFed').value       || 0) / 100,
-    shortM:      +$('shortM').value       || 1,
-    longM:       +$('longM').value        || 12,
+    shortM:      clamp(Math.round(+$('shortM').value) || 6, 1, 11),
+    longM:       clamp(Math.round(+$('longM').value) || 18, 12, 60),
     future:      +$('futureR').value      || 0,
     capitalize: S.capitalize, horizon: S.horizon, status: S.status
   };
@@ -271,6 +272,10 @@ segWire('seg-cap', 'capitalize');
 segWire('seg-horizon', 'horizon');
 segWire('seg-status', 'status');
 ['otherIncome','stateRate','ltFed','shortM','longM'].forEach(id => { const el = $(id); if (el) el.addEventListener('input', calc); });
+// Snap the hold-period fields into range once the user finishes editing (blur),
+// so partial typing (e.g. "1" on the way to "18") never sticks as an invalid value.
+$('shortM').addEventListener('change', () => { $('shortM').value = clamp(Math.round(+$('shortM').value) || 6, 1, 11); calc(); });
+$('longM').addEventListener('change',  () => { $('longM').value  = clamp(Math.round(+$('longM').value) || 18, 12, 60); calc(); });
 $('futureR').addEventListener('input', () => { $('futureV').textContent = '$' + (+$('futureR').value); calc(); });
 
 /* ---- month labels (browser Date is fine) ---- */
@@ -390,7 +395,7 @@ function calc(){
     debt = end;
     const sharesCover = R.F > 0 ? Math.ceil(cumInt / R.F) : 0;
     const flag = (mo === I.shortM || mo === I.longM) ? ' style="background:#eef5ff;font-weight:700"' : '';
-    sched += `<tr${flag}><td>${monthLabel(mo)} <span style="color:var(--mut)">(mo ${mo})</span></td>
+    sched += `<tr${flag}><td>${monthLabel(mo - 1)} <span style="color:var(--mut)">(mo ${mo})</span></td>
       <td>${fmt(start)}</td><td>${fmt(monthInt)}</td><td>${I.capitalize ? 'capitalized' : 'paid ' + fmt(monthInt)}</td>
       <td>${fmt(end)}</td><td>${fmt(cumInt)}</td><td>${fmtS(sharesCover)} sh</td></tr>`;
   }
