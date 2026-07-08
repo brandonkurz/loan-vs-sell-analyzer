@@ -336,6 +336,7 @@ function calc(){
   m += row('Shares kept', fmtS(R.remain), fmtS(R.keptBorrow), fmtS(R.remain), fmtS(R.keptBorrow), 'sumrow');
   m += `<tr class="grp-row"><td colspan="5">At sale ($${I.future})</td></tr>`;
   m += row('Gross proceeds', fmt(R.remain * R.F), fmt(R.keptBorrow * R.F), fmt(R.remain * R.F), fmt(R.keptBorrow * R.F));
+  m += row('Gross gain before interest & taxes', fmt(R.remain * R.gainPS), fmt(R.keptBorrow * R.gainPS), fmt(R.remain * R.gainPS), fmt(R.keptBorrow * R.gainPS));
   m += row('Capital-gains tax', '-' + fmt(R.remain * R.gainPS * R.stCgRate), '-' + fmt(R.keptBorrow * R.gainPS * R.stCgRate), '-' + fmt(R.remain * R.gainPS * R.ltCgRate), '-' + fmt(R.keptBorrow * R.gainPS * R.ltCgRate));
   m += row('Loan interest', dash, '-' + fmt(R.intST), dash, '-' + fmt(R.intLT));
   m += row('Loan principal repaid', dash, '-' + fmt(R.loanAmount), dash, '-' + fmt(R.loanAmount));
