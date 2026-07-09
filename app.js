@@ -111,6 +111,7 @@ const SOURCE_TYPES = [
   { name:'HELOC',                      rate:7.5 },
   { name:'Family Loan',                rate:5.0 },
   { name:'Personal Loan',              rate:11.0 },
+  { name:'401(k) Loan',                rate:8.5 },
   { name:'Balance Transfer (promo)',   rate:0.0 },
   { name:'Other',                      rate:8.0 }
 ];
@@ -308,10 +309,12 @@ function calc(){
   $('futureV').textContent    = '$' + I.future;
   $('fpLbl').textContent      = '$' + I.future;
   const cov = R.taxesDue > 0 ? R.loanAmount / R.taxesDue : 0;
+  const has401k = (I.sources || []).some((s,i) => s.type === '401(k) Loan' && (R.drawn[i] || 0) > 0);
   $('srcNote').innerHTML = `Total capacity <b>${fmt(R.capacity)}</b> covers <b>${pct(cov)}</b> of the <b>${fmt(R.taxesDue)}</b> tax bill. Cheapest sources are drawn first, for a blended rate of <b>${R.loanAmount>0?pct(R.blendedRate):'—'}</b> on the <b>${fmt(R.loanAmount)}</b> borrowed.` +
     (R.shortfall > 0
       ? ` <b style="color:var(--bad)">Shortfall of ${fmt(R.shortfall)}</b> exceeds available credit → <b>${fmtS(R.shortfallShares)} shares</b> must still be sold to cover it.`
-      : ` The loan fully covers the tax — <b>no shares sold</b>.`);
+      : ` The loan fully covers the tax — <b>no shares sold</b>.`) +
+    (has401k ? ` <b style="color:var(--amber)">401(k) loan note:</b> capped at the lesser of $50,000 or 50% of the vested balance, and typically becomes due in full if employment ends — unpaid balances are treated as a taxable (and possibly penalized) distribution.` : '');
 
   const isLT = I.horizon === 'lt';
   const adv  = isLT ? R.advLT : R.advST;
