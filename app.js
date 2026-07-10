@@ -8,7 +8,7 @@ const fmt  = n => (n < 0 ? '-$' : '$') + Math.abs(Math.round(n)).toLocaleString(
 const fmtS = n => Math.round(n).toLocaleString('en-US');
 const pct  = n => (n * 100).toFixed(1) + '%';
 
-const PRICE = 61.55;                 // fixed 409A / settlement price
+const readPrice = () => +$('price409a').value || 0.01;   // 409A / settlement price (user input)
 
 /* ---- 2026 federal ordinary brackets (taxable income after std deduction) ---- */
 const BRK = {
@@ -85,12 +85,12 @@ function readGrants(){
     shares:+tr.querySelector('[data-f=shares]').value || 0
   }));
 }
-function refreshGrantCells(grants){
+function refreshGrantCells(grants, price){
   const rows = grantsBody.querySelectorAll('tr');
   let total = 0;
-  grants.forEach((g,i) => { if (rows[i]) rows[i].querySelector('.valCell').textContent = fmt(g.shares * PRICE); total += g.shares; });
+  grants.forEach((g,i) => { if (rows[i]) rows[i].querySelector('.valCell').textContent = fmt(g.shares * price); total += g.shares; });
   $('gTotShares').textContent = fmtS(total);
-  $('gTotValue').textContent  = fmt(total * PRICE);
+  $('gTotValue').textContent  = fmt(total * price);
 }
 grantsBody.addEventListener('input', calc);
 grantsBody.addEventListener('click', e => {
@@ -185,7 +185,7 @@ function readInputs(){
   return {
     grants,
     shares:      grants.reduce((s,g) => s + g.shares, 0),
-    price:       PRICE,
+    price:       readPrice(),
     sources:     readSources(),
     otherIncome: +$('otherIncome').value || 0,
     stateRate:   (+$('stateRate').value  || 0) / 100,
@@ -199,7 +199,7 @@ function readInputs(){
 
 /* ---- pure model ---- */
 function compute(I){
-  const N = I.shares, p = PRICE, F = I.future, status = I.status;
+  const N = I.shares, p = I.price, F = I.future, status = I.status;
 
   // settlement tax: RSU income stacked on other income through 2026 brackets, + state + payroll
   const rsuIncome   = N * p;
@@ -272,7 +272,7 @@ function segWire(id, key, cb){
 segWire('seg-cap', 'capitalize');
 segWire('seg-horizon', 'horizon');
 segWire('seg-status', 'status');
-['otherIncome','stateRate','ltFed','shortM','longM'].forEach(id => { const el = $(id); if (el) el.addEventListener('input', calc); });
+['price409a','otherIncome','stateRate','ltFed','shortM','longM'].forEach(id => { const el = $(id); if (el) el.addEventListener('input', calc); });
 // Snap the hold-period fields into range once the user finishes editing (blur),
 // so partial typing (e.g. "1" on the way to "18") never sticks as an invalid value.
 $('shortM').addEventListener('change', () => { $('shortM').value = clamp(Math.round(+$('shortM').value) || 6, 1, 11); calc(); });
@@ -298,12 +298,11 @@ $('printBtn').addEventListener('click', () => window.print());
 /* ============================================================ RENDER */
 function calc(){
   const I = readInputs(), R = compute(I);
-  refreshGrantCells(I.grants);
+  refreshGrantCells(I.grants, I.price);
   refreshSourceCells(R);
   $('grossV').textContent     = fmt(R.gross);
   $('sharesEcho').textContent = fmtS(R.N);
-  $('g409a').textContent      = PRICE.toFixed(2);
-  $('priceRO').textContent    = '$' + PRICE.toFixed(2);
+  $('g409a').textContent      = I.price.toFixed(2);
   $('ratesRO').innerHTML      = `Settlement: <b>${pct(R.settleEff)}</b><br>Short-term gains: <b>${pct(R.stCgRate)}</b><br>Long-term gains: <b>${pct(R.ltCgRate)}</b>`;
   $('loanRO').innerHTML       = R.loanAmount > 0 ? `<b>${pct(R.blendedRate)}</b> on ${fmt(R.loanAmount)} · capacity ${fmt(R.capacity)}` : `No loan sources`;
   $('futureV').textContent    = '$' + I.future;
@@ -375,7 +374,7 @@ function calc(){
   }).join('') +
   `<div class="wf-row" style="border-top:2px solid var(--gold);padding-top:8px;margin-top:6px"><div class="wf-lab"><b>Net advantage of borrowing</b></div>
     <div class="wf-bar"></div><div class="wf-amt ${adv>=0?'pos':'neg'}"><b>${adv>=0?'+':''}${fmt(adv)}</b></div></div>`;
-  $('wfNote').innerHTML = `Borrowing keeps <b>${fmtS(dS)} more shares</b> than selling to cover — funded by the <b>${fmt(R.loanAmount)}</b> loan instead of selling them at today's $${PRICE.toFixed(2)}. Those shares ride to $${I.future}; borrowing wins when their value beats the loan repaid + the <b>${pct(cgRateH)}</b> cap-gains tax + <b>${fmt(intCost)}</b> interest. Net: <b class="${adv>=0?'pos':'neg'}">${adv>=0?'+':''}${fmt(adv)}</b>.`;
+  $('wfNote').innerHTML = `Borrowing keeps <b>${fmtS(dS)} more shares</b> than selling to cover — funded by the <b>${fmt(R.loanAmount)}</b> loan instead of selling them at today's $${I.price.toFixed(2)}. Those shares ride to $${I.future}; borrowing wins when their value beats the loan repaid + the <b>${pct(cgRateH)}</b> cap-gains tax + <b>${fmt(intCost)}</b> interest. Net: <b class="${adv>=0?'pos':'neg'}">${adv>=0?'+':''}${fmt(adv)}</b>.`;
 
   // short-term vs long-term
   const taxSaved = R.keptBorrow * R.gainPS * (R.stCgRate - R.ltCgRate);
