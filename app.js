@@ -8,7 +8,7 @@ const fmt  = n => (n < 0 ? '-$' : '$') + Math.abs(Math.round(n)).toLocaleString(
 const fmtS = n => Math.round(n).toLocaleString('en-US');
 const pct  = n => (n * 100).toFixed(1) + '%';
 
-const readPrice = () => +$('price409a').value || 0.01;   // 409A / settlement price (user input)
+const readPrice = () => +$('price409a').value || 0;   // 409A / settlement price (user input; blank until entered)
 
 /* ---- 2026 federal ordinary brackets (taxable income after std deduction) ---- */
 const BRK = {

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Diversifi Capital — Loan vs. Sell-to-Cover Analyzer</title>
-<link rel="stylesheet" href="styles.css?v=13">
+<link rel="stylesheet" href="styles.css?v=14">
 </head>
 <body>
 <header class="top">
@@ -44,7 +44,7 @@
         <tfoot><tr class="totals"><td>Total</td><td></td><td id="gTotShares">0</td><td id="gTotValue">$0</td><td class="noprint"></td></tr></tfoot>
       </table>
     </div>
-    <div class="pad"><div class="help">Enter each grant from the client's Shareworks report. Shares are summed; all settle at the <b>$<span id="g409a">61.55</span></b> 409A price set in the inputs.</div></div>
+    <div class="pad"><div class="help">Enter each grant from the client's Shareworks report. Shares are summed; all settle at the <b>$<span id="g409a">0.00</span></b> 409A price set in the inputs.</div></div>
   </div>
 
   <div class="panel" id="srcPanel" style="margin-bottom:20px">
@@ -72,7 +72,7 @@
       <div class="grp">
         <div class="grp-t">The Position</div>
         <div class="fld"><label class="l">409A / settlement price</label>
-          <div class="pre"><span class="sym">$</span><input type="number" id="price409a" value="61.55" min="0.01" step="0.01"></div>
+          <div class="pre"><span class="sym">$</span><input type="number" id="price409a" value="" placeholder="0.00" min="0.01" step="0.01"></div>
           <div class="help">Cost basis &amp; sell-to-cover price for all grants. <b id="sharesEcho">0</b> shares · gross <b id="grossV">$0</b></div></div>
       </div>
       <div class="grp">
@@ -202,6 +202,6 @@
   </main>
 </div></div>
 
-<script src="app.js?v=13"></script>
+<script src="app.js?v=14"></script>
 </body>
 </html>
